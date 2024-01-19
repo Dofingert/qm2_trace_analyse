@@ -93,11 +93,12 @@ struct inst_info_t {
     uint32_t r_mem_addr;
     uint32_t r_mem_value;
 };
+
 void parse_one_input_gather(void* buffer, uint64_t elem_cnt, uint64_t interval)
 {
     struct pred_key_t pred;
     for(uint64_t i = 0; i < elem_cnt; i++) {
-        if ((i % interval) == 0 && i) print_analyse(std::cout);
+        if ((global_cnt % interval) == 0 && global_cnt) print_analyse(std::cout);
         struct inst_info_t *raw_info = (struct inst_info_t*)buffer + i;
         pred.r_reg[0] = raw_info->r_reg0_value;
         pred.r_reg[1] = raw_info->r_reg1_value;
@@ -110,6 +111,10 @@ void parse_one_input_gather(void* buffer, uint64_t elem_cnt, uint64_t interval)
 void parse_one_file_gather(char* filename, uint64_t interval) {
     // Open file.
     int fd = open(filename, O_RDONLY);
+    if(fd < 0) {
+        std::cout << "Not a valid filename: " << filename << std::endl;
+        return;
+    }
     struct stat s;
 
     // Calculate file size.
@@ -129,6 +134,11 @@ void parse_one_file_gather(char* filename, uint64_t interval) {
 
 #include <fstream>
 
-int main() {
-    parse_one_file_gather((char*)"main", 1024); // 39M per print info.
+int main(int argc, char* argv[]) {
+    if(argc < 2) {
+        std::cout << "Usage: ./piority_analyse [input_file list]" << std::endl;;
+        return 0;
+    }
+    for(int i = 0 ; i < argc - 1 ; i++) parse_one_file_gather(argv[1 + i], 1024 * 1024 / 39); // 1M per print info.
+    print_analyse(std::cout);
 }
