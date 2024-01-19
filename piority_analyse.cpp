@@ -139,6 +139,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage: ./piority_analyse [input_file list]" << std::endl;;
         return 0;
     }
-    for(int i = 0 ; i < argc - 1 ; i++) parse_one_file_gather(argv[1 + i], 1024 * 1024 / 39); // 1M per print info.
+    for(int i = 0 ; i < argc - 1 ; i++) {
+        parse_one_file_gather(argv[1 + i], 1024 * 1024 * 2); // 78M per print info.
+        std::cerr << "finish file:" << argv[1 + i] << std::endl;
+    }
     print_analyse(std::cout);
 }
