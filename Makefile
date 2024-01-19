@@ -1,4 +1,4 @@
-CXX      := g++-11
+CXX      := g++
 CXXFLAGS := -std=c++14 -pedantic-errors -Wall -Wextra -Werror
 INCLUDE  := -I./
 
