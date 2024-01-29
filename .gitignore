@@ -1,4 +1,4 @@
 .vscode
-main.o
+*.o
 main
 piority_analyse

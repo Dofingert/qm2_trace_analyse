@@ -4,17 +4,18 @@ struct pred_key_t {
     uint32_t r_reg[2];
     uint32_t w_reg;
     uint32_t pc;
+    uint32_t inst;
 };
 
 template<>
 struct std::hash<pred_key_t> {
     size_t operator()(const pred_key_t &k) const {
-        return (k.w_reg ^ k.r_reg[0]) | ((uint64_t)(k.pc ^ k.r_reg[1]) << 32);
+        return (k.w_reg ^ k.r_reg[0]) | ((uint64_t)(k.pc ^ k.r_reg[1] ^ k.inst) << 32);
     }
 };
 
 bool operator==(const pred_key_t &a, const pred_key_t &b) {
-    return a.pc == b.pc && a.w_reg == b.w_reg && a.r_reg[0] == b.r_reg[0] && a.r_reg[1] == b.r_reg[1];
+    return a.pc == b.pc && a.w_reg == b.w_reg && a.r_reg[0] == b.r_reg[0] && a.r_reg[1] == b.r_reg[1] && a.inst == b.inst;
 }
 
 typedef phmap::node_hash_map<pred_key_t, uint64_t> inst_to_freq_t;
@@ -38,6 +39,16 @@ void parse_one_inst_gathered(pred_key_t* inst_info)
 #include <sys/mman.h>
 #include <iostream>
 #include <queue>
+
+struct freq_p_type
+{
+    uint64_t freq;
+    uint8_t type;
+};
+bool operator<(const freq_p_type &a, const freq_p_type &b) {
+    return a.freq < b.freq;
+}
+extern uint8_t categorize_rv32(uint32_t inst);
 void print_analyse(std::ostream &output) {
     // 每 10% 一个目标 10 - 20 - 30 - 40 - 50 - 60 - 70 - 80 - 90 - 100
     uint64_t now_iter = 0;
@@ -47,34 +58,40 @@ void print_analyse(std::ostream &output) {
     uint64_t exc_cnt = 0;
 
     // 构建堆
-    std::priority_queue<uint64_t> heap;
+    std::priority_queue<freq_p_type> heap;
     for(auto iter : freq) {
-        heap.push(iter.second);
+        heap.push({iter.second,categorize_rv32(iter.first.inst)});
     }
 
-    // 结果数组
-    uint64_t results[9];
+    // 结果
+    uint64_t results_for_types[12];
+
+    // 打印结果
+    output << global_cnt << "\t";
 
     // 遍历堆
     while (now_iter != 9)
     {
         auto v = heap.top();
-        exc_cnt += v;
+        exc_cnt += v.freq;
+        results_for_types[v.type] += 1;
         heap.pop();
         bev_cnt += 1;
         if(exc_cnt > tgt) {
             tgt += cnt_d_10;
-            results[now_iter++] = bev_cnt;
+            // 打印结果
+            output << bev_cnt << "\t";
+            for(int i = 0 ; i < 12 ; i ++) {
+                output << results_for_types[i] << "\t";
+            }
         }
     }
-    
-    // 打印结果
-    output << global_cnt << "\t";
-    for(int i = 0 ; i < 9 ; i ++) {
-        output << results[i];
-        output << "\t";
+
+    output << freq.size() << "\t";
+    for(int i = 0 ; i < 11 ; i ++) {
+        output << results_for_types[i] << "\t";
     }
-    output << freq.size() << std::endl;
+    output << results_for_types[11] << std::endl;
     // 所有资源均被自动回收
 }
 
