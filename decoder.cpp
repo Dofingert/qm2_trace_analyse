@@ -25,6 +25,8 @@ uint8_t categorize_rv32(uint32_t inst) {
     return jal;
     case raw_jalr:
     return jalr;
+    case raw_atomic:
+    return atomic;
     default:
     return invalid;
     }

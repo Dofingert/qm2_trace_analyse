@@ -1,5 +1,5 @@
 CXX      := g++
-CXXFLAGS := -std=c++14 -pedantic-errors -Wall -Wextra -Werror
+CXXFLAGS := -std=c++14 -O3 -pedantic-errors -Wall -Wextra -Werror
 INCLUDE  := -I./
 
 all: main piority_analyse

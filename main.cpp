@@ -82,7 +82,7 @@ void parse_one_file(char* filename) {
 
 #include <iostream>
 uint32_t print_information(std::ostream &output) {
-    uint32_t pc_cnt;
+    uint32_t pc_cnt = 0;
     for(auto pc_pair : pc_map) {
         pc_cnt++;
         uint32_t pc = pc_pair.first;

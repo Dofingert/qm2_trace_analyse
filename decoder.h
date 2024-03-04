@@ -14,6 +14,7 @@ enum rawopcode {
   raw_auipc    = 0b0010111,
   raw_jal      = 0b1101111,
   raw_jalr     = 0b1100111,
+  raw_atomic   = 0b0101111,
 };
 
 enum myopcode {
@@ -28,6 +29,7 @@ enum myopcode {
   auipc,
   jal,
   jalr,
+  atomic,
   invalid
 };
 
